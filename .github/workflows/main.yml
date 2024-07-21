@@ -25,8 +25,7 @@ jobs:
       run: pip install requests
 
     - name: Run script
-      env:
-      run: python index.py
+      run: python bored-checker.py
 
     - name: Upload state file
       uses: actions/upload-artifact@v2
