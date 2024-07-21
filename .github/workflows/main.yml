@@ -1,0 +1,36 @@
+name: Check User Status
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'  # Runs every 5 minutes
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+
+    - name: Install requests
+      run: pip install requests
+
+    - name: Run script
+      env:
+        DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+      run: python index.py
+
+    - name: Upload state file
+      uses: actions/upload-artifact@v2
+      with:
+        name: state
+        path: state.json
