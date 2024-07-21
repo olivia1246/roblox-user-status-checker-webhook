@@ -2,7 +2,7 @@ name: Check User Status
 
 on:
   schedule:
-    - cron: '*/1 * * * *'  # Runs every 1 minute
+    - cron: '*/5 * * * *'  # Runs every 5 minutes
   push:
     branches:
       - main
