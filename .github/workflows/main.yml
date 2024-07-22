@@ -25,6 +25,8 @@ jobs:
       run: pip install requests
 
     - name: Run script
+      env:
+        DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
       run: python index.py
 
     - name: Upload state file
