@@ -1,5 +1,6 @@
 import requests
 import json
+import os
 from datetime import datetime
 
 def get_user_id(username):
@@ -55,7 +56,7 @@ def save_state(state_file, state):
 
 def main():
     username = "Eloisa04"
-    discord_webhook_url = "https://discord.com/api/webhooks/1264619798235582556/0q2-1IYvUzaZQimyrB9zgThkkVI41t8AIYrrnYt6ZBBr4URN20fzUmcpibUxWqMnmPRV"
+    discord_webhook_url = os.getenv('DISCORD_WEBHOOK_URL')
     state_file = "state.json"
 
     user_id = get_user_id(username)
