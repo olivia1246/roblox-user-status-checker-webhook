@@ -3,6 +3,9 @@ import json
 import os
 from datetime import datetime
 
+username = "Eloisa04"
+discord_webhook_url = os.getenv('DISCORD_WEBHOOK_URL')
+
 def get_user_id(username):
     url = "https://users.roblox.com/v1/usernames/users"
     payload = {
@@ -55,8 +58,6 @@ def save_state(state_file, state):
         json.dump(state, f)
 
 def main():
-    username = "Eloisa04"
-    discord_webhook_url = os.getenv('DISCORD_WEBHOOK_URL')
     state_file = "state.json"
 
     user_id = get_user_id(username)
