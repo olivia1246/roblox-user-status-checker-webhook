@@ -55,7 +55,7 @@ def save_state(state_file, state):
         json.dump(state, f)
 
 def main():
-    username = "AdoptMe9943"
+    username = "Eloisa04"
     discord_webhook_url = os.getenv('DISCORD_WEBHOOK_URL')
     state_file = "state.json"
 
