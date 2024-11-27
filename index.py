@@ -3,7 +3,7 @@ import json
 import os
 from datetime import datetime
 
-username = "AdoptMe9943"
+username = "Eloisa04"
 roblosecurity_cookie = os.getenv('ROBLOSECURITY_COOKIE') # Not required, if status of the target user is public.
 discord_webhook_url = os.getenv('DISCORD_WEBHOOK_URL')
 
