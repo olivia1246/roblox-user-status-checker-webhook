@@ -4,6 +4,7 @@ import os
 from datetime import datetime
 
 username = "Eloisa04"
+roblosecurity_cookie = os.getenv('ROBLOSECURITY_COOKIE') # Not required, if status of the target user is public.
 discord_webhook_url = os.getenv('DISCORD_WEBHOOK_URL')
 
 def get_user_id(username):
@@ -25,7 +26,10 @@ def check_user_status(user_id):
     payload = {
         "userIds": [user_id]
     }
-    response = requests.post(url, json=payload)
+    headers = {
+        "Cookie": f".ROBLOSECURITY={roblosecurity_cookie}",
+    }
+    response = requests.post(url, json=payload, headers=headers)
     print(f"check_user_status response: {response.status_code}, {response.text}")  # Debug print
     if response.status_code == 200:
         data = response.json()
