@@ -28,6 +28,7 @@ jobs:
     - name: Run script
       env:
         DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        ROBLOSECURITY_COOKIE: ${{ secrets.ROBLOSECURITY_COOKIE }}
       run: python index.py
 
     - name: Upload state file
