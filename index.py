@@ -96,10 +96,10 @@ def main():
             else:
                 presence_str = "Online"
                 circle = "🔵"
-            message = f"{circle} {username} is now {presence_str}! Last seen in: {location} (as of {current_time})"
+            message = f"# {circle} {username} is now {presence_str}! Last seen in: {location} (as of {current_time})"
         else:
             last_online_time = datetime.fromisoformat(last_online.replace("Z", "+00:00")).strftime("%Y-%m-%d %H:%M:%S")
-            message = f"🔴 {username} is now offline (Last online: {last_online_time})"
+            message = f"# 🔴 {username} is now offline (Last online: {last_online_time})"
         
         send_discord_webhook(discord_webhook_url, message)
         
