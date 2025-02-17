@@ -4,17 +4,13 @@ import os
 from datetime import datetime
 
 username = "Eloisa04"
-roblosecurity_cookie = os.getenv('ROBLOSECURITY_COOKIE') # Not required, if status of the target user is public.
+roblosecurity_cookie = os.getenv('ROBLOSECURITY_COOKIE')
 discord_webhook_url = os.getenv('DISCORD_WEBHOOK_URL')
 
 def get_user_id(username):
     url = "https://users.roblox.com/v1/usernames/users"
-    payload = {
-        "usernames": [username],
-        "excludeBannedUsers": True
-    }
+    payload = {"usernames": [username], "excludeBannedUsers": True}
     response = requests.post(url, json=payload)
-    print(f"get_user_id response: {response.status_code}, {response.text}")  # Debug print
     if response.status_code == 200:
         data = response.json()
         if data['data']:
@@ -23,32 +19,33 @@ def get_user_id(username):
 
 def check_user_status(user_id):
     url = "https://presence.roblox.com/v1/presence/users"
-    payload = {
-        "userIds": [user_id]
-    }
-    headers = {
-        "Cookie": f".ROBLOSECURITY={roblosecurity_cookie}",
-    }
+    payload = {"userIds": [user_id]}
+    headers = {"Cookie": f".ROBLOSECURITY={roblosecurity_cookie}"}
     response = requests.post(url, json=payload, headers=headers)
-    print(f"check_user_status response: {response.status_code}, {response.text}")  # Debug print
     if response.status_code == 200:
         data = response.json()
-        print("Response Data:", data)  # Debug print
         if 'userPresences' in data:
             user_presence = data['userPresences'][0]
-            is_online = user_presence.get('userPresenceType') != 0
-            last_location = user_presence.get('lastLocation', 'Unknown')
-            presence_type = user_presence.get('userPresenceType', 0)
-            last_online = user_presence.get('lastOnline', '1970-01-01T00:00:00.000Z')
-            return is_online, last_location, presence_type, last_online
+            return (
+                user_presence.get('userPresenceType') != 0,
+                user_presence.get('lastLocation', 'Unknown'),
+                user_presence.get('userPresenceType', 0),
+                user_presence.get('lastOnline', '1970-01-01T00:00:00.000Z')
+            )
     return False, 'Unknown', 0, '1970-01-01T00:00:00.000Z'
 
+def get_latest_badge(user_id):
+    url = f"https://badges.roblox.com/v1/users/{user_id}/badges?limit=10&sortOrder=Desc"
+    response = requests.get(url)
+    if response.status_code == 200:
+        data = response.json()
+        if 'data' in data and data['data']:
+            latest_badge = data['data'][0]
+            return latest_badge['name'], latest_badge['description']
+    return None, None
+
 def send_discord_webhook(webhook_url, message):
-    payload = {
-        "content": message
-    }
-    response = requests.post(webhook_url, json=payload)
-    print(f"send_discord_webhook response: {response.status_code}, {response.text}")  # Debug print
+    requests.post(webhook_url, json={"content": message})
 
 def load_state(state_file):
     try:
@@ -63,50 +60,38 @@ def save_state(state_file, state):
 
 def main():
     state_file = "state.json"
-
     user_id = get_user_id(username)
-    print(f"User ID: {user_id}")  # Debug print
     if not user_id:
-        print(f"Could not find user ID for username: {username}")
+        print(f"Could not find user ID for {username}")
         return
 
     state = load_state(state_file)
-    last_status = state.get("last_status", None)
-    last_location = state.get("last_location", None)
-    last_presence_type = state.get("last_presence_type", None)
-
     is_online, location, presence_type, last_online = check_user_status(user_id)
-    print(f"Status: {is_online}, Location: {location}, Presence Type: {presence_type}, Last Online: {last_online}")  # Debug print
-    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    
     status_changed = (
-        is_online != last_status or
-        location != last_location or
-        presence_type != last_presence_type
+        is_online != state.get("last_status") or
+        location != state.get("last_location") or
+        presence_type != state.get("last_presence_type")
     )
     
+    badge_name, badge_desc = get_latest_badge(user_id)
+    if badge_name and badge_name != state.get("last_badge"):
+        message = f"🏆 {username} has earned a new badge: **{badge_name}** - {badge_desc}"
+        send_discord_webhook(discord_webhook_url, message)
+        state["last_badge"] = badge_name
+
     if status_changed:
+        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         if is_online:
-            if presence_type == 2:
-                presence_str = "In game"
-                circle = "🟢"
-            elif presence_type == 3:
-                presence_str = "In Studio"
-                circle = "🟠"
-            else:
-                presence_str = "Online"
-                circle = "🔵"
-            message = f"# {circle} {username} is now {presence_str}! Last seen in: {location} (as of {current_time})"
+            presence_str = "In game" if presence_type == 2 else "In Studio" if presence_type == 3 else "Online"
+            circle = "🟢" if presence_type == 2 else "🟠" if presence_type == 3 else "🔵"
+            message = f"{circle} {username} is now {presence_str}! Last seen in: {location} ({current_time})"
         else:
             last_online_time = datetime.fromisoformat(last_online.replace("Z", "+00:00")).strftime("%Y-%m-%d %H:%M:%S")
-            message = f"# 🔴 {username} is now offline (Last online: {last_online_time})"
-        
+            message = f"🔴 {username} is now offline (Last online: {last_online_time})"
         send_discord_webhook(discord_webhook_url, message)
-        
-        state["last_status"] = is_online
-        state["last_location"] = location
-        state["last_presence_type"] = presence_type
-        save_state(state_file, state)
+        state.update({"last_status": is_online, "last_location": location, "last_presence_type": presence_type})
+    
+    save_state(state_file, state)
 
 if __name__ == "__main__":
     main()
