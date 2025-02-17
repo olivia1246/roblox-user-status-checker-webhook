@@ -32,7 +32,7 @@ jobs:
       run: python index.py
 
     - name: Upload state file
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: state
         path: state.json
