@@ -41,8 +41,8 @@ def get_latest_badge(user_id):
         data = response.json()
         if 'data' in data and data['data']:
             latest_badge = data['data'][0]
-            return latest_badge['name'], latest_badge['description']
-    return None, None
+            return latest_badge['name'], latest_badge['description'], latest_badge['id']
+    return None, None, None
 
 def send_discord_webhook(webhook_url, message):
     requests.post(webhook_url, json={"content": message})
@@ -73,9 +73,10 @@ def main():
         presence_type != state.get("last_presence_type")
     )
     
-    badge_name, badge_desc = get_latest_badge(user_id)
+    badge_name, badge_desc, badge_id = get_latest_badge(user_id)
     if badge_name and badge_name != state.get("last_badge"):
-        message = f"🏆 {username} has earned a new badge: **{badge_name}** - {badge_desc}"
+        badge_url = f"https://www.roblox.com/badges/{badge_id}"
+        message = f"# 🏆 {username} has earned a new badge: **{badge_name}**\n\n{badge_desc}\n\n🔗 [View Badge]({badge_url})"
         send_discord_webhook(discord_webhook_url, message)
         state["last_badge"] = badge_name
 
@@ -84,10 +85,10 @@ def main():
         if is_online:
             presence_str = "In game" if presence_type == 2 else "In Studio" if presence_type == 3 else "Online"
             circle = "🟢" if presence_type == 2 else "🟠" if presence_type == 3 else "🔵"
-            message = f"{circle} {username} is now {presence_str}! Last seen in: {location} ({current_time})"
+            message = f"# {circle} {username} is now {presence_str}!\n\nLast seen in: {location} ({current_time})"
         else:
             last_online_time = datetime.fromisoformat(last_online.replace("Z", "+00:00")).strftime("%Y-%m-%d %H:%M:%S")
-            message = f"🔴 {username} is now offline (Last online: {last_online_time})"
+            message = f"# 🔴 {username} is now offline\n\nLast online: {last_online_time}"
         send_discord_webhook(discord_webhook_url, message)
         state.update({"last_status": is_online, "last_location": location, "last_presence_type": presence_type})
     
