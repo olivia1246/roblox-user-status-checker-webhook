@@ -6,11 +6,10 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch:    
+  workflow_dispatch:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
@@ -25,13 +24,19 @@ jobs:
     - name: Install requests
       run: pip install requests
 
+    - name: Download previous state file
+      uses: actions/download-artifact@v4
+      with:
+        name: state
+        path: .
+
     - name: Run script
       env:
         DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
         ROBLOSECURITY_COOKIE: ${{ secrets.ROBLOSECURITY_COOKIE }}
       run: python index.py
 
-    - name: Upload state file
+    - name: Upload new state file
       uses: actions/upload-artifact@v4
       with:
         name: state
