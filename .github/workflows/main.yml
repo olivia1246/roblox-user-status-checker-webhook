@@ -25,9 +25,10 @@ jobs:
       run: pip install requests
 
     - name: Download previous state file
+      continue-on-error: true
       uses: actions/download-artifact@v4
       with:
-        name: state.json
+        name: state
         path: .
 
     - name: Run script
