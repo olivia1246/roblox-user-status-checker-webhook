@@ -27,7 +27,7 @@ jobs:
     - name: Download previous state file
       uses: actions/download-artifact@v4
       with:
-        name: state
+        name: state.json
         path: .
 
     - name: Run script
