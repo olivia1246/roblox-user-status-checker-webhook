@@ -25,10 +25,13 @@ jobs:
       run: pip install requests
 
     - name: Restore previous state file
+      id: cache-state
       uses: actions/cache@v3
       with:
         path: state.json
-        key: state-file
+        key: state-file-${{ github.run_id }}
+        restore-keys: |
+          state-file-
 
     - name: Run script
       env:
@@ -36,14 +39,11 @@ jobs:
         ROBLOSECURITY_COOKIE: ${{ secrets.ROBLOSECURITY_COOKIE }}
       run: python index.py
 
-    - name: Save new state file
+    - name: Save new state file to cache
+      if: always()  # Ensures state is always saved
       uses: actions/cache@v3
       with:
         path: state.json
-        key: state-file
-
-    - name: Upload new state file
-      uses: actions/upload-artifact@v4
-      with:
-        name: state
-        path: state.json
+        key: state-file-${{ github.run_id }}
+        restore-keys: |
+          state-file-
